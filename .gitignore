@@ -1,0 +1,6 @@
+/uploads/
+/Resources/
+/includes/db_connect.php
+.env
+*.log
+.DS_Store
