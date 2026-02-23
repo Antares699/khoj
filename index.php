@@ -117,6 +117,7 @@ require_once 'includes/header.php';
                         if (strpos($cat, 'service') !== false)
                             $imgUrl = './Resources/Quick Fix.jpeg';
 
+                        $rating = round($biz['avg_rating']);
                         $starsHtml = '';
                         for ($i = 0; $i < 5; $i++) {
                             $starsHtml .= $i < $rating ? '&#9733;' : '&#9734;';
