@@ -11,7 +11,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $password = $_POST['password'];
     $confirm_password = $_POST['confirm_password'];
 
-    // Basic Validation
     if (empty($username) || empty($email) || empty($password)) {
         $error = "All fields are required.";
     } elseif (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
@@ -21,7 +20,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     } elseif (strlen($password) < 6) {
         $error = "Password must be at least 6 characters.";
     } else {
-        // Check if username or email already exists
         $stmt = $conn->prepare("SELECT id FROM users WHERE username = ? OR email = ?");
         $stmt->bind_param("ss", $username, $email);
         $stmt->execute();
@@ -30,18 +28,13 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         if ($stmt->num_rows > 0) {
             $error = "Username or Email already exists.";
         } else {
-            // Hash password
             $hashed_password = password_hash($password, PASSWORD_DEFAULT);
 
-            // Insert into users table
             $stmt = $conn->prepare("INSERT INTO users (username, email, password) VALUES (?, ?, ?)");
             $stmt->bind_param("sss", $username, $email, $hashed_password);
 
             if ($stmt->execute()) {
                 $success = "Registration successful! <a href='login.php'>Login here</a>.";
-                // Optionally redirect
-                // header("Location: login.php");
-                // exit;
             } else {
                 $error = "Error: " . $stmt->error;
             }

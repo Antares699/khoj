@@ -49,12 +49,8 @@ if ($resultUser->num_rows > 0) {
     }
 }
 
-// 2. Define our target Quotas and Overpass Queries
-// We are looking within the boundaries of Kathmandu district
-// Bbox roughly: 27.65, 85.25 (SW) to 27.75, 85.38 (NE)
 $bbox = "27.65,85.25,27.75,85.38";
 
-// The Multi-Pass Strategy definitions:
 $categories = [
     'Restaurants & Cafes' => [
         'limit' => 20,
@@ -92,33 +88,22 @@ $totalInserted = 0;
 
 // Prepare the insert statement
 $insertBiz = $conn->prepare("INSERT INTO businesses (owner_id, osm_id, name, slug, category, description, location, lat, lon, phone, website, attributes) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
-
-// Prepare check for existing osm_id
 $checkOsm = $conn->prepare("SELECT id FROM businesses WHERE osm_id = ?");
-// ssss sss s s -> i s s s s s s s s (1 int, 8 strings = 9 fields)
 
-// Helper to create a slug
 function createSlug($string)
 {
     $string = strtolower(trim(preg_replace('/[^A-Za-z0-9-]+/', '-', $string)));
-    return $string . '-' . rand(1000, 9999); // Ensure uniqueness
+    return $string . '-' . rand(1000, 9999);
 }
 
-// 3. Execute the queries
 foreach ($categories as $groupName => $config) {
     echo "<h3>Fetching $groupName (Target: {$config['limit']})</h3>";
 
-    // Build the Overpass Query (JSON format)
     $overpassQuery = "[out:json][timeout:25];(" . $config['query'] . ");out body " . $config['limit'] . ";>;out skel qt;";
-
-    // API Call
     $url = "http://overpass-api.de/api/interpreter?data=" . urlencode($overpassQuery);
-
-    // Use file_get_contents with a timeout context
     $context = stream_context_create(array(
         'http' => array('timeout' => 30)
     ));
-
     $response = @file_get_contents($url, false, $context);
 
     if ($response === FALSE) {
@@ -136,13 +121,12 @@ foreach ($categories as $groupName => $config) {
     $count = 0;
     foreach ($data['elements'] as $element) {
         if (!isset($element['tags']) || !isset($element['tags']['name'])) {
-            continue; // Must have a name
+            continue;
         }
 
         $tags = $element['tags'];
 
         $name = $tags['name'] ?? 'Unknown Business';
-        // Prefer English name if it exists and the local name looks messy
         if (isset($tags['name:en']) && preg_match('/[A-Za-z]/', $tags['name:en'])) {
             $name = $tags['name:en'];
         }
@@ -150,11 +134,9 @@ foreach ($categories as $groupName => $config) {
         $slug = createSlug($name);
         $category = $config['db_category'];
 
-        // Extract coordinates from OSM element
         $lat = $element['lat'] ?? null;
         $lon = $element['lon'] ?? null;
 
-        // Build Location String
         $locationParts = [];
         if (isset($tags['addr:street']))
             $locationParts[] = $tags['addr:street'];
@@ -162,14 +144,11 @@ foreach ($categories as $groupName => $config) {
             $locationParts[] = $tags['addr:city'];
         $location = empty($locationParts) ? "Kathmandu" : implode(', ', $locationParts);
 
-        // Contact Info
         $phone = $tags['phone'] ?? ($tags['contact:phone'] ?? null);
         $website = $tags['website'] ?? ($tags['contact:website'] ?? null);
 
-        // Default Description
         $description = "A highly-rated $category located in $location.";
 
-        // --- BUILD THE JSON ATTRIBUTES PAYLOAD ---
         $attributes = [];
 
         if (isset($tags['cuisine'])) {
@@ -191,7 +170,6 @@ foreach ($categories as $groupName => $config) {
             $attributes['delivery'] = true;
         }
 
-        // Dietary restrictions (mostly restaurants)
         if (isset($tags['diet:vegan']) && $tags['diet:vegan'] === 'yes') {
             $attributes['diet_vegan'] = true;
         }
@@ -202,7 +180,6 @@ foreach ($categories as $groupName => $config) {
             $attributes['diet_halal'] = true;
         }
 
-        // Payment attributes
         if (isset($tags['payment:credit_cards']) && $tags['payment:credit_cards'] === 'yes') {
             $attributes['accepts_credit_cards'] = true;
         }
@@ -212,31 +189,27 @@ foreach ($categories as $groupName => $config) {
 
         $jsonAttributes = json_encode($attributes);
 
-        // Get OSM element ID
         $osmId = $element['id'] ?? null;
 
-        // Skip if this OSM element is already seeded (check by osm_id or by name)
         if ($osmId !== null) {
             $checkOsm->bind_param("i", $osmId);
             $checkOsm->execute();
             $checkResult = $checkOsm->get_result();
             if ($checkResult->num_rows > 0) {
-                continue; // Already seeded by osm_id, skip
+                continue;
             }
         }
 
-        // Also check by name to avoid duplicates from previous seeds without osm_id
         $checkName = $conn->prepare("SELECT id FROM businesses WHERE name = ?");
         $checkName->bind_param("s", $name);
         $checkName->execute();
         $checkNameResult = $checkName->get_result();
         if ($checkNameResult->num_rows > 0) {
             $checkName->close();
-            continue; // Already seeded by name, skip
+            continue;
         }
         $checkName->close();
 
-        // Execute Insert (lat/lon can be null)
         $insertBiz->bind_param("iisssssddsss", $ownerId, $osmId, $name, $slug, $category, $description, $location, $lat, $lon, $phone, $website, $jsonAttributes);
 
         if ($insertBiz->execute()) {

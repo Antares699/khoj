@@ -13,7 +13,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $comment = isset($_POST['comment']) ? trim($_POST['comment']) : '';
 
     if ($businessId > 0 && $rating >= 1 && $rating <= 5 && !empty($comment)) {
-        // Prevent duplicate reviews from same user for same business
         $checkStmt = $conn->prepare("SELECT id FROM reviews WHERE user_id = ? AND business_id = ?");
         $checkStmt->bind_param("ii", $userId, $businessId);
         $checkStmt->execute();
@@ -22,7 +21,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             exit;
         }
 
-        // Handle image upload
         $imagePath = null;
         if (isset($_FILES['review_image']) && $_FILES['review_image']['error'] === UPLOAD_ERR_OK) {
             $allowed = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];

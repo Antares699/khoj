@@ -79,20 +79,81 @@ while ($row = $catResult->fetch_assoc()) {
 </main>
 
 <script>
+    function isBusinessOpen(hoursStr) {
+        if (!hoursStr) return false;
+        if (hoursStr.toLowerCase() === '24/7') return true;
+
+        try {
+            const parts = hoursStr.split('-');
+            if (parts.length !== 2) return true;
+
+            const now = new Date();
+            const currentMinutes = now.getHours() * 60 + now.getMinutes();
+
+            const startParts = parts[0].trim().split(':');
+            const startMinutes = parseInt(startParts[0]) * 60 + parseInt(startParts[1] || 0);
+
+            const endParts = parts[1].trim().split(':');
+            let endMinutes = parseInt(endParts[0]) * 60 + parseInt(endParts[1] || 0);
+
+            if (endMinutes < startMinutes) endMinutes += 24 * 60;
+            let checkMinutes = currentMinutes;
+            if (currentMinutes < startMinutes && endMinutes > 24 * 60) checkMinutes += 24 * 60;
+
+            return checkMinutes >= startMinutes && checkMinutes <= endMinutes;
+        } catch (e) {
+            return true;
+        }
+    }
+
+    function formatHours(raw) {
+        if (!raw) return '';
+        if (raw.toLowerCase() === '24/7') return 'Mon - Sun, Open 24 Hours';
+
+        const daysMap = {
+            'Mo': 'Mon', 'Tu': 'Tue', 'We': 'Wed',
+            'Th': 'Thu', 'Fr': 'Fri', 'Sa': 'Sat', 'Su': 'Sun'
+        };
+
+        const match = raw.trim().match(/^([A-Za-z]{2}(?:-[A-Za-z]{2})?)?\s*(\d{2}:\d{2})-(\d{2}:\d{2})$/);
+        if (match) {
+            const daysPart = match[1] || '';
+            let prettyDays = "Mon - Sun";
+            if (daysPart) {
+                if (daysPart.includes('-')) {
+                    const dp = daysPart.split('-');
+                    prettyDays = (daysMap[dp[0]] || dp[0]) + ' - ' + (daysMap[dp[1]] || dp[1]);
+                } else {
+                    prettyDays = daysMap[daysPart] || daysPart;
+                }
+            }
+
+            const formatTime = (timeStr) => {
+                let [h, m] = timeStr.split(':');
+                h = parseInt(h);
+                const ampm = h >= 12 ? 'PM' : 'AM';
+                h = h % 12;
+                h = h ? h : 12;
+                return `${h}:${m} ${ampm}`;
+            };
+
+            return `${prettyDays}, ${formatTime(match[2])} - ${formatTime(match[3])}`;
+        }
+        return raw;
+    }
+
     document.addEventListener("DOMContentLoaded", function () {
         const urlParams = new URLSearchParams(window.location.search);
         const q = urlParams.get('q') || '';
         const loc = urlParams.get('loc') || '';
 
-        // Update the search bar UI to reflect what was searched
         const searchInputs = document.querySelectorAll(".h-search-box input");
         if (searchInputs.length >= 2) {
             searchInputs[0].value = q;
             searchInputs[1].value = loc;
         }
 
-        // --- STATE ---
-        let allResults = []; // full API response, filtered client-side
+        let allResults = [];
         let activeMinRating = 0;
 
         const resultsContainer = document.getElementById("resultsContainer");
@@ -145,15 +206,12 @@ while ($row = $catResult->fetch_assoc()) {
             updateStarDisplay(activeMinRating);
         });
 
-        // --- CHECKBOX FILTERS (Features) ---
         document.querySelectorAll("#featureFilter input").forEach(cb => {
             cb.addEventListener("change", renderResults);
         });
 
-        // --- SORT DROPDOWN ---
         sortSelect.addEventListener("change", renderResults);
 
-        // --- FETCH DATA ---
         fetch(`api/search_businesses.php?q=${encodeURIComponent(q)}&loc=${encodeURIComponent(loc)}`)
             .then(response => response.json())
             .then(data => {
@@ -165,45 +223,13 @@ while ($row = $catResult->fetch_assoc()) {
                 console.error('Search API error:', err);
             });
 
-        // --- RENDER FUNCTION ---
         function renderResults() {
             let filtered = [...allResults];
 
-            // 1. Rating filter
             if (activeMinRating > 0) {
                 filtered = filtered.filter(biz => parseFloat(biz.avg_rating) >= activeMinRating);
             }
 
-            // Helper to check if currently open based on hours string (e.g. '10:00-22:00')
-            function isBusinessOpen(hoursStr) {
-                if (!hoursStr) return false;
-                if (hoursStr.toLowerCase() === '24/7') return true;
-
-                // Extremely simple parsing for MVP (assumes "HH:MM-HH:MM" format)
-                try {
-                    const parts = hoursStr.split('-');
-                    if (parts.length !== 2) return true; // fallback if format is weird
-
-                    const now = new Date();
-                    const currentMinutes = now.getHours() * 60 + now.getMinutes();
-
-                    const startParts = parts[0].trim().split(':');
-                    const startMinutes = parseInt(startParts[0]) * 60 + parseInt(startParts[1] || 0);
-
-                    const endParts = parts[1].trim().split(':');
-                    let endMinutes = parseInt(endParts[0]) * 60 + parseInt(endParts[1] || 0);
-
-                    if (endMinutes < startMinutes) endMinutes += 24 * 60; // wraps past midnight
-                    let checkMinutes = currentMinutes;
-                    if (currentMinutes < startMinutes && endMinutes > 24 * 60) checkMinutes += 24 * 60;
-
-                    return checkMinutes >= startMinutes && checkMinutes <= endMinutes;
-                } catch (e) {
-                    return true; // fallback
-                }
-            }
-
-            // 2. Feature filters
             const checkedFeatures = [];
             document.querySelectorAll("#featureFilter input:checked").forEach(cb => {
                 checkedFeatures.push(cb.value);
@@ -220,23 +246,15 @@ while ($row = $catResult->fetch_assoc()) {
                 });
             }
 
-            // 3. Category filters (Now handled via server/URL params directly)
-            // No client-side category filtering needed anymore since clicking
-            // a category link reloads the page with ?q=Category
-
-            // 4. Sorting
             const sortVal = sortSelect.value;
             if (sortVal === "highest") {
                 filtered.sort((a, b) => parseFloat(b.avg_rating) - parseFloat(a.avg_rating));
             } else if (sortVal === "most_reviewed") {
                 filtered.sort((a, b) => parseInt(b.review_count) - parseInt(a.review_count));
             }
-            // 'recommended' = default API order (already sorted by rating desc)
 
-            // Update count
             resultsCount.textContent = `${filtered.length} result${filtered.length !== 1 ? 's' : ''} found`;
 
-            // Clear and render
             resultsContainer.innerHTML = '';
 
             if (filtered.length === 0) {
@@ -245,7 +263,6 @@ while ($row = $catResult->fetch_assoc()) {
             }
 
             filtered.forEach((biz, index) => {
-                // Determine cover image
                 let imgUrl = 'Resources/Himalayan Kitchen.png';
                 const cat = (biz.category || '').toLowerCase();
                 if (cat.includes('hotel')) imgUrl = 'Resources/Hotel Barahi.jpg';
@@ -254,7 +271,6 @@ while ($row = $catResult->fetch_assoc()) {
                 if (cat.includes('shopping')) imgUrl = 'Resources/Bhatbhateni.jpg';
                 if (cat.includes('service')) imgUrl = 'Resources/Quick Fix.jpeg';
 
-                // Parse rating
                 const rating = parseFloat(biz.avg_rating) || 0;
                 const roundedRating = Math.round(rating);
                 let starsHTML = '';
@@ -262,7 +278,6 @@ while ($row = $catResult->fetch_assoc()) {
                     starsHTML += i < roundedRating ? '★' : '☆';
                 }
 
-                // Parse attributes for tags
                 let tagsHTML = `<span class="tag">${biz.category}</span>`;
                 if (biz.attributes) {
                     if (biz.attributes.cuisine) {
@@ -276,61 +291,21 @@ while ($row = $catResult->fetch_assoc()) {
                         });
                     }
 
-                    // New Rich Features
                     if (biz.attributes.has_wifi) tagsHTML += `<span class="tag">Free Wi-Fi</span>`;
                     if (biz.attributes.outdoor_seating) tagsHTML += `<span class="tag">Outdoor Seating</span>`;
                     if (biz.attributes.wheelchair_accessible) tagsHTML += `<span class="tag">Wheelchair Accessible</span>`;
                     if (biz.attributes.delivery) tagsHTML += `<span class="tag">Delivery</span>`;
                     if (biz.attributes.accepts_credit_cards) tagsHTML += `<span class="tag">Card Accepted</span>`;
 
-                    // Dietary Tags
                     if (biz.attributes.diet_vegan) tagsHTML += `<span class="tag" style="background:#e8f5e9;color:#2e7d32;">Vegan</span>`;
                     if (biz.attributes.diet_vegetarian) tagsHTML += `<span class="tag" style="background:#e8f5e9;color:#2e7d32;">Vegetarian</span>`;
                     if (biz.attributes.diet_halal) tagsHTML += `<span class="tag" style="background:#e8f5e9;color:#2e7d32;">Halal</span>`;
                 }
-                // Helper: Format OSM Hours to AM/PM string
-                function formatHours(raw) {
-                    if (!raw) return '';
-                    if (raw.toLowerCase() === '24/7') return 'Mon - Sun, Open 24 Hours';
 
-                    const daysMap = {
-                        'Mo': 'Mon', 'Tu': 'Tue', 'We': 'Wed',
-                        'Th': 'Thu', 'Fr': 'Fri', 'Sa': 'Sat', 'Su': 'Sun'
-                    };
-
-                    const match = raw.trim().match(/^([A-Za-z]{2}(?:-[A-Za-z]{2})?)?\s*(\d{2}:\d{2})-(\d{2}:\d{2})$/);
-                    if (match) {
-                        const daysPart = match[1] || '';
-                        let prettyDays = "Mon - Sun";
-                        if (daysPart) {
-                            if (daysPart.includes('-')) {
-                                const dp = daysPart.split('-');
-                                prettyDays = (daysMap[dp[0]] || dp[0]) + ' - ' + (daysMap[dp[1]] || dp[1]);
-                            } else {
-                                prettyDays = daysMap[daysPart] || daysPart;
-                            }
-                        }
-
-                        const formatTime = (timeStr) => {
-                            let [h, m] = timeStr.split(':');
-                            h = parseInt(h);
-                            const ampm = h >= 12 ? 'PM' : 'AM';
-                            h = h % 12;
-                            h = h ? h : 12; // 0 -> 12
-                            return `${h}:${m} ${ampm}`;
-                        };
-
-                        return `${prettyDays}, ${formatTime(match[2])} - ${formatTime(match[3])}`;
-                    }
-                    return raw; // Fallback
-                }
-
-                // Append parsed hours tag if available
                 if (biz.attributes && biz.attributes.opening_hours) {
                     tagsHTML += `<span class="tag">Hours: ${formatHours(biz.attributes.opening_hours)}</span>`;
                 }
 
-                // Add Open status tag automatically if Open
                 if (biz.attributes && isBusinessOpen(biz.attributes.opening_hours)) {
                     tagsHTML = `<span class="tag" style="background:#e8f5e9;color:#2e7d32;border-color:#c8e6c9;font-weight:600;">Open</span>` + tagsHTML;
                 } else if (biz.attributes && biz.attributes.opening_hours) {

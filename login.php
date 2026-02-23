@@ -11,7 +11,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     if (empty($email) || empty($password)) {
         $error = "Please enter both email and password.";
     } else {
-        // 1. Try USERS table
         $stmt = $conn->prepare("SELECT id, username, password FROM users WHERE email = ?");
         $stmt->bind_param("s", $email);
         $stmt->execute();
@@ -22,7 +21,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             $stmt->fetch();
             $user_type = 'user';
         } else {
-            // 2. Try BUSINESS_OWNERS table
             $stmt->close();
             $stmt = $conn->prepare("SELECT id, first_name, password FROM business_owners WHERE email = ?");
             $stmt->bind_param("s", $email);
@@ -30,7 +28,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             $stmt->store_result();
 
             if ($stmt->num_rows > 0) {
-                $stmt->bind_result($id, $username, $hashed_password); // mapping first_name to username variable for convenience
+                $stmt->bind_result($id, $username, $hashed_password);
                 $stmt->fetch();
                 $user_type = 'business_owner';
             } else {
@@ -39,19 +37,16 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         }
         $stmt->close();
 
-        // Verify Password if user found
         if (empty($error) && isset($hashed_password)) {
             if (password_verify($password, $hashed_password)) {
-                // Password correct, start session
                 if (session_status() === PHP_SESSION_NONE) {
                     session_start();
                 }
 
                 $_SESSION['user_id'] = $id;
                 $_SESSION['username'] = $username;
-                $_SESSION['user_type'] = $user_type; // New session variable
+                $_SESSION['user_type'] = $user_type;
 
-                // Redirect to home
                 header("Location: index.php");
                 exit;
             } else {

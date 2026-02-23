@@ -79,7 +79,6 @@ require_once 'includes/header.php';
             </div>
             <div class="card-grid">
                 <?php
-                // Fetch top 30 businesses based on reviews and ratings to ensure we have enough to find 6 distinct categories
                 $topBizQuery = "
                     SELECT b.*, 
                     IFNULL(AVG(r.rating), 0) as avg_rating, 
@@ -99,15 +98,12 @@ require_once 'includes/header.php';
                     while ($biz = $topBizResult->fetch_assoc()) {
                         $catLower = strtolower(trim($biz['category']));
 
-                        // Skip if we already have a business in this category
                         if (in_array($catLower, $seenCategories)) {
                             continue;
                         }
 
-                        // Mark category as seen and increment count
                         $seenCategories[] = $catLower;
                         $featuredCount++;
-                        // Dynamically resolve image based on category
                         $cat = strtolower($biz['category']);
                         $imgUrl = './Resources/Himalayan Kitchen.png';
                         if (strpos($cat, 'hotel') !== false)
@@ -121,14 +117,11 @@ require_once 'includes/header.php';
                         if (strpos($cat, 'service') !== false)
                             $imgUrl = './Resources/Quick Fix.jpeg';
 
-                        // Parse rating & features
-                        $rating = round($biz['avg_rating']);
                         $starsHtml = '';
                         for ($i = 0; $i < 5; $i++) {
                             $starsHtml .= $i < $rating ? '&#9733;' : '&#9734;';
                         }
 
-                        // Determine Open/Closed Status
                         $isOpen = false;
                         $hasHours = false;
                         $attributes = !empty($biz['attributes']) ? json_decode($biz['attributes'], true) : [];
@@ -196,7 +189,6 @@ require_once 'includes/header.php';
                             </div>
                         </article>
                         <?php
-                        // Stop after we have successfully displayed 6 unique featured businesses
                         if ($featuredCount >= 6) {
                             break;
                         }
