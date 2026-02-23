@@ -29,7 +29,8 @@ CREATE TABLE business_owners (
 
 CREATE TABLE businesses (
     id INT AUTO_INCREMENT PRIMARY KEY,
-    owner_id INT NOT NULL, 
+    owner_id INT NOT NULL,
+    osm_id BIGINT NULL,
     name VARCHAR(100) NOT NULL,
     slug VARCHAR(100) NOT NULL UNIQUE,
     category VARCHAR(50) NOT NULL,
@@ -42,7 +43,8 @@ CREATE TABLE businesses (
     attributes JSON,
     is_featured BOOLEAN DEFAULT FALSE,
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (owner_id) REFERENCES business_owners(id) ON DELETE CASCADE
+    FOREIGN KEY (owner_id) REFERENCES business_owners(id) ON DELETE CASCADE,
+    UNIQUE KEY unique_osm_id (osm_id)
 );
 
 CREATE TABLE reviews (

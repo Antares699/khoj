@@ -91,7 +91,10 @@ $categories = [
 $totalInserted = 0;
 
 // Prepare the insert statement
-$insertBiz = $conn->prepare("INSERT INTO businesses (owner_id, name, slug, category, description, location, lat, lon, phone, website, attributes) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+$insertBiz = $conn->prepare("INSERT INTO businesses (owner_id, osm_id, name, slug, category, description, location, lat, lon, phone, website, attributes) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+
+// Prepare check for existing osm_id
+$checkOsm = $conn->prepare("SELECT id FROM businesses WHERE osm_id = ?");
 // ssss sss s s -> i s s s s s s s s (1 int, 8 strings = 9 fields)
 
 // Helper to create a slug
@@ -209,8 +212,32 @@ foreach ($categories as $groupName => $config) {
 
         $jsonAttributes = json_encode($attributes);
 
+        // Get OSM element ID
+        $osmId = $element['id'] ?? null;
+
+        // Skip if this OSM element is already seeded (check by osm_id or by name)
+        if ($osmId !== null) {
+            $checkOsm->bind_param("i", $osmId);
+            $checkOsm->execute();
+            $checkResult = $checkOsm->get_result();
+            if ($checkResult->num_rows > 0) {
+                continue; // Already seeded by osm_id, skip
+            }
+        }
+
+        // Also check by name to avoid duplicates from previous seeds without osm_id
+        $checkName = $conn->prepare("SELECT id FROM businesses WHERE name = ?");
+        $checkName->bind_param("s", $name);
+        $checkName->execute();
+        $checkNameResult = $checkName->get_result();
+        if ($checkNameResult->num_rows > 0) {
+            $checkName->close();
+            continue; // Already seeded by name, skip
+        }
+        $checkName->close();
+
         // Execute Insert (lat/lon can be null)
-        $insertBiz->bind_param("isssssddsss", $ownerId, $name, $slug, $category, $description, $location, $lat, $lon, $phone, $website, $jsonAttributes);
+        $insertBiz->bind_param("iisssssddsss", $ownerId, $osmId, $name, $slug, $category, $description, $location, $lat, $lon, $phone, $website, $jsonAttributes);
 
         if ($insertBiz->execute()) {
             $count++;
