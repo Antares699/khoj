@@ -1,0 +1,60 @@
+services:
+  web:
+    build: .
+    ports:
+      - "8080:80"
+    volumes:
+      - .:/var/www/html
+      - ./uploads:/var/www/html/uploads
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - khoj-network
+    environment:
+      - DB_HOST=db
+      - DB_NAME=khoj_db
+      - DB_USER=root
+      - DB_PASS=khoj_root_pass
+
+  db:
+    image: mysql:8.0
+    ports:
+      - "3306:3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: khoj_root_pass
+      MYSQL_DATABASE: khoj_db
+    volumes:
+      - khoj-mysql-data:/var/lib/mysql
+      - ./docker/mysql/init:/docker-entrypoint-initdb.d
+    networks:
+      - khoj-network
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-uroot", "-pkhoj_root_pass"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+
+  phpmyadmin:
+    image: phpmyadmin:latest
+    ports:
+      - "8081:80"
+    environment:
+      PMA_HOST: db
+      PMA_PORT: 3306
+      PMA_USER: root
+      PMA_PASSWORD: khoj_root_pass
+      UPLOAD_LIMIT: 50M
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - khoj-network
+
+networks:
+  khoj-network:
+    driver: bridge
+
+volumes:
+  khoj-mysql-data:

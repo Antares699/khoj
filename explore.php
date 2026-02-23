@@ -2,7 +2,7 @@
 
 <?php
 // Fetch distinct categories from the database for the sidebar
-require_once 'includes/db_connect.php';
+require_once 'includes/config.php';
 $catResult = $conn->query("SELECT DISTINCT category FROM businesses ORDER BY category ASC");
 $categories = [];
 while ($row = $catResult->fetch_assoc()) {

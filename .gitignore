@@ -1,12 +1,11 @@
 /uploads/
-/Resources/
 /includes/db_connect.php
 .env
 *.log
 .DS_Store
 
 # Seeder scripts (dev only)
-seed_osm.php
+# seed_osm.php - commented out to include in Docker
 
 # IDE/Editor files
 .idea/
@@ -33,3 +32,9 @@ Desktop.ini
 # Database dumps with data (keep schema.sql for structure)
 database.sql
 *.sql.backup
+
+# Docker (persisted data)
+docker/mysql/data/
+
+# Config files (copy from config.example.php)
+includes/config.php

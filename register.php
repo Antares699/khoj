@@ -1,6 +1,6 @@
 <?php
 // register.php
-require_once 'includes/db_connect.php';
+require_once 'includes/config.php';
 
 $error = '';
 $success = '';

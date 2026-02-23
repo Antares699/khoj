@@ -39,6 +39,8 @@ CREATE TABLE businesses (
     category VARCHAR(50) NOT NULL,
     description TEXT,
     location VARCHAR(100),
+    lat DECIMAL(10,8) DEFAULT NULL,
+    lon DECIMAL(11,8) DEFAULT NULL,
     phone VARCHAR(20),
     website VARCHAR(255),
     attributes JSON,

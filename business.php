@@ -1,5 +1,5 @@
 <?php
-require_once 'includes/db_connect.php';
+require_once 'includes/config.php';
 
 // Include Leaflet for Maps
 $leaflet_css = '<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>';
