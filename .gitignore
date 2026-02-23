@@ -4,3 +4,32 @@
 .env
 *.log
 .DS_Store
+
+# Seeder scripts (dev only)
+seed_osm.php
+
+# IDE/Editor files
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# Backup files
+*.bak
+*.backup
+
+# Temporary files
+*.tmp
+*.temp
+
+# Windows files
+Thumbs.db
+Desktop.ini
+
+# Composer (if used later)
+/vendor/
+
+# Database dumps with data (keep schema.sql for structure)
+database.sql
+*.sql.backup
