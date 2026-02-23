@@ -1533,10 +1533,10 @@ body {
 
 /* Base Layout Container */
 .biz-content-wrap {
-    max-width: 900px;
+    max-width: 1100px;
     margin: 40px auto 80px;
     display: grid;
-    grid-template-columns: 2fr 1fr;
+    grid-template-columns: 3fr 2fr;
     gap: 40px;
     background: var(--white);
     padding: 40px;
