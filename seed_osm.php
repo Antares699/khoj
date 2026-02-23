@@ -96,6 +96,26 @@ function createSlug($string)
     return $string . '-' . rand(1000, 9999);
 }
 
+function normalizeOpeningHours($hours) {
+    if (empty($hours)) return null;
+    
+    $hours = preg_replace('/\b(\d):(\d{2})\b/', '0$1:$2', $hours);
+    
+    if (preg_match('/^(\d{2}:\d{2})\s*-\s*(\d{2}:\d{2})$/', $hours, $matches)) {
+        $start = $matches[1];
+        $end = $matches[2];
+        
+        if ($start === $end) {
+            $endHour = intval($start) + 12;
+            if ($endHour >= 24) $endHour -= 24;
+            $end = sprintf('%02d:00', $endHour);
+            return "$start-$end";
+        }
+    }
+    
+    return $hours;
+}
+
 foreach ($categories as $groupName => $config) {
     echo "<h3>Fetching $groupName (Target: {$config['limit']})</h3>";
 
@@ -155,7 +175,7 @@ foreach ($categories as $groupName => $config) {
             $attributes['cuisine'] = explode(';', $tags['cuisine']);
         }
         if (isset($tags['opening_hours'])) {
-            $attributes['opening_hours'] = $tags['opening_hours'];
+            $attributes['opening_hours'] = normalizeOpeningHours($tags['opening_hours']);
         }
         if (isset($tags['internet_access']) && ($tags['internet_access'] == 'wlan' || $tags['internet_access'] == 'yes')) {
             $attributes['has_wifi'] = true;
