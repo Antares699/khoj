@@ -16,23 +16,23 @@
             </div>
             <div class="foot-col">
                 <h4>Discover</h4>
-                <a href="<?php echo $pagePrefix; ?>explore.php?q=Restaurants">Restaurants</a>
-                <a href="<?php echo $pagePrefix; ?>explore.php?q=Healthcare">Healthcare</a>
-                <a href="<?php echo $pagePrefix; ?>explore.php?q=Salons">Salons</a>
-                <a href="<?php echo $pagePrefix; ?>explore.php?q=Hotels">Hotels</a>
-                <a href="<?php echo $pagePrefix; ?>explore.php?q=Services">Services</a>
-                <a href="<?php echo $pagePrefix; ?>explore.php?q=Shopping">Shopping</a>
+                <a href="explore.php?q=Restaurants">Restaurants</a>
+                <a href="explore.php?q=Healthcare">Healthcare</a>
+                <a href="explore.php?q=Salons">Salons</a>
+                <a href="explore.php?q=Hotels">Hotels</a>
+                <a href="explore.php?q=Services">Services</a>
+                <a href="explore.php?q=Shopping">Shopping</a>
             </div>
             <div class="foot-col">
                 <h4>Business</h4>
-                <a href="<?php echo $pagePrefix; ?>business-signup.php">Add a Business</a>
-                <a href="<?php echo $pagePrefix; ?>claim.php">Claim your business</a>
+                <a href="business-signup.php">Add a Business</a>
+                <a href="claim.php">Claim your business</a>
 
             </div>
             <div class="foot-col">
                 <h4>Khoj</h4>
-                <a href="<?php echo $pagePrefix; ?>about.php">About</a>
-                <a href="<?php echo $pagePrefix; ?>contact.php">Contact</a>
+                <a href="about.php">About</a>
+                <a href="contact.php">Contact</a>
 
             </div>
         </div>
@@ -40,7 +40,7 @@
     </div>
 </footer>
 
-<script src="<?php echo $pagePrefix; ?>js/script.js?v=<?php echo time(); ?>"></script>
+<script src="./script.js?v=<?php echo time(); ?>"></script>
 </body>
 
 </html>

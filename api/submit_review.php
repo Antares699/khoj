@@ -47,7 +47,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         $stmt->bind_param("iiiss", $userId, $businessId, $rating, $comment, $imagePath);
 
         if ($stmt->execute()) {
-            header("Location: /pages/business.php?id=" . $businessId);
+            header("Location: ../business.php?id=" . $businessId);
             exit;
         } else {
             die("Error submitting review: " . $conn->error);
