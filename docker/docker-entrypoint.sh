@@ -14,7 +14,7 @@ BUSINESS_COUNT=$(mysql -h db -u root -pkhoj_root_pass khoj_db -N -B -e "SELECT C
 
 if [ "$BUSINESS_COUNT" -eq "0" ]; then
     echo "No businesses found. Running seeder..."
-    php /var/www/html/seed_osm.php
+    php /var/www/html/scripts/seed_osm.php
     echo "Seeding complete!"
 else
     echo "Database already has $BUSINESS_COUNT businesses. Skipping seed."

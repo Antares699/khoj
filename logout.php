@@ -1,8 +1,4 @@
 <?php
-// logout.php
-session_start();
-session_unset();
-session_destroy();
-header("Location: index.php");
+$qs = $_SERVER['QUERY_STRING'] ? '?' . $_SERVER['QUERY_STRING'] : '';
+header('Location: pages/logout.php' . $qs, true, 301);
 exit;
-?>

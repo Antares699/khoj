@@ -32,12 +32,12 @@ require_once 'includes/header.php';
                 </div>
 
                 <div class="cat-row">
-                    <a href="explore.php?q=Restaurants" class="cat-link">Restaurants</a>
-                    <a href="explore.php?q=Healthcare" class="cat-link">Healthcare</a>
-                    <a href="explore.php?q=Salons" class="cat-link">Salons</a>
-                    <a href="explore.php?q=Hotels" class="cat-link">Hotels</a>
-                    <a href="explore.php?q=Services" class="cat-link">Services</a>
-                    <a href="explore.php?q=Shopping" class="cat-link">Shopping</a>
+                    <a href="pages/explore.php?q=Restaurants" class="cat-link">Restaurants</a>
+                    <a href="pages/explore.php?q=Healthcare" class="cat-link">Healthcare</a>
+                    <a href="pages/explore.php?q=Salons" class="cat-link">Salons</a>
+                    <a href="pages/explore.php?q=Hotels" class="cat-link">Hotels</a>
+                    <a href="pages/explore.php?q=Services" class="cat-link">Services</a>
+                    <a href="pages/explore.php?q=Shopping" class="cat-link">Shopping</a>
                 </div>
             </div>
             <div class="hero-right">
@@ -105,17 +105,17 @@ require_once 'includes/header.php';
                         $seenCategories[] = $catLower;
                         $featuredCount++;
                         $cat = strtolower($biz['category']);
-                        $imgUrl = './Resources/Himalayan Kitchen.png';
+                        $imgUrl = './assets/images/defaults/himalayan-kitchen.png';
                         if (strpos($cat, 'hotel') !== false)
-                            $imgUrl = './Resources/Hotel Barahi.jpg';
+                            $imgUrl = './assets/images/defaults/hotel-barahi.jpg';
                         if (strpos($cat, 'healthcare') !== false)
-                            $imgUrl = './Resources/Nepal Mediciti.JPG';
+                            $imgUrl = './assets/images/defaults/nepal-mediciti.jpg';
                         if (strpos($cat, 'salon') !== false || strpos($cat, 'beauty') !== false)
-                            $imgUrl = './Resources/Hair Studio.jpg';
+                            $imgUrl = './assets/images/defaults/hair-studio.jpg';
                         if (strpos($cat, 'shopping') !== false)
-                            $imgUrl = './Resources/Bhatbhateni.jpg';
+                            $imgUrl = './assets/images/defaults/bhatbhateni.jpg';
                         if (strpos($cat, 'service') !== false)
-                            $imgUrl = './Resources/Quick Fix.jpeg';
+                            $imgUrl = './assets/images/defaults/quick-fix.jpeg';
 
                         $rating = round($biz['avg_rating']);
                         $starsHtml = '';
@@ -172,7 +172,7 @@ require_once 'includes/header.php';
                                 <div class="card-head">
                                     <span class="card-cat"><?php echo htmlspecialchars($biz['category']); ?></span>
                                 </div>
-                                <h3><a href="business.php?id=<?php echo $biz['id']; ?>"
+                                <h3><a href="pages/business.php?id=<?php echo $biz['id']; ?>"
                                         style="color:inherit; text-decoration:none;"><?php echo htmlspecialchars($biz['name']); ?></a>
                                 </h3>
                                 <p class="card-loc"><?php echo htmlspecialchars($biz['location']); ?></p>

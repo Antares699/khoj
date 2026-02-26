@@ -3,6 +3,7 @@
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
+$pagePrefix = (dirname($_SERVER['PHP_SELF']) === '/') ? '' : '../';
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -13,7 +14,7 @@ if (session_status() === PHP_SESSION_NONE) {
     <?php
     $pageTitle = $pageTitle ?? "Khoj – Discover Nepal's Best";
     $pageDesc = $pageDesc ?? "Khoj is the modern, clean platform to discover the best restaurants, healthcare, hotels, and more in Nepal.";
-    $pageImage = $pageImage ?? "http://localhost/Khoj/Resources/default-og.png"; // Replace with real domain later
+    $pageImage = $pageImage ?? ""; // Replace with real domain later
     $pageUrl = "http://" . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'];
     ?>
     <title><?php echo htmlspecialchars($pageTitle); ?></title>
@@ -36,7 +37,7 @@ if (session_status() === PHP_SESSION_NONE) {
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap"
         rel="stylesheet">
-    <link rel="stylesheet" href="./style.css?v=<?php echo time(); ?>">
+    <link rel="stylesheet" href="<?php echo $pagePrefix; ?>css/style.css?v=<?php echo time(); ?>">
     <link rel="icon" type="image/svg+xml"
         href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%233366FF' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z'%3E%3C/path%3E%3Cpolyline points='3.27 6.96 12 12.01 20.73 6.96'%3E%3C/polyline%3E%3Cline x1='12' y1='22.08' x2='12' y2='12'%3E%3C/line%3E%3C/svg%3E">
     <!-- Optional Map Libraries -->
@@ -51,7 +52,7 @@ if (session_status() === PHP_SESSION_NONE) {
     <div class="dot-grid"></div>
 
     <nav class="nav">
-        <a href="./" class="logo">
+        <a href="/" class="logo">
             <svg width="28" height="28" viewBox="0 0 24 24">
                 <rect x="2" y="2" width="20" height="20" rx="3" fill="none" stroke="currentColor" stroke-width="2" />
                 <rect x="8" y="8" width="8" height="8" rx="1" fill="currentColor" />
@@ -98,7 +99,7 @@ if (session_status() === PHP_SESSION_NONE) {
                         </svg>
                         Add a Business
                     </a>
-                    <a href="claim.php">
+                    <a href="<?php echo $pagePrefix; ?>claim.php">
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                             stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                             <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
@@ -106,7 +107,7 @@ if (session_status() === PHP_SESSION_NONE) {
                         </svg>
                         Claim your business
                     </a>
-                    <a href="login.php?role=business">
+                    <a href="<?php echo $pagePrefix; ?>login.php?role=business">
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                             stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                             <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
@@ -125,10 +126,10 @@ if (session_status() === PHP_SESSION_NONE) {
                 <span style="font-size: 13px; color: var(--gray-500); font-weight: 600;">Hi,
                     <?php echo htmlspecialchars($_SESSION['username']); ?>
                 </span>
-                <a href="logout.php" class="link-login" style="color: #EF4444;">Log out</a>
+                <a href="<?php echo $pagePrefix; ?>logout.php" class="link-login" style="color: #EF4444;">Log out</a>
             <?php else: ?>
-                <a href="login.php" class="link-login">Log in</a>
-                <a href="register.php" class="link-cta">Sign up</a>
+                <a href="<?php echo $pagePrefix; ?>login.php" class="link-login">Log in</a>
+                <a href="<?php echo $pagePrefix; ?>register.php" class="link-cta">Sign up</a>
             <?php endif; ?>
         </div>
         <button class="burger" id="burger">
@@ -141,14 +142,14 @@ if (session_status() === PHP_SESSION_NONE) {
     </nav>
 
     <div class="mob-panel" id="mobPanel">
-        <a href="./">Home</a>
+        <a href="/">Home</a>
         <a href="#">Explore</a>
         <a href="#">Categories</a>
         <?php if (isset($_SESSION['user_id'])): ?>
-            <a href="logout.php">Log out</a>
+            <a href="<?php echo $pagePrefix; ?>logout.php">Log out</a>
         <?php else: ?>
-            <a href="login.php">Log in</a>
-            <a href="register.php">Sign up</a>
+            <a href="<?php echo $pagePrefix; ?>login.php">Log in</a>
+            <a href="<?php echo $pagePrefix; ?>register.php">Sign up</a>
         <?php endif; ?>
     </div>
 
@@ -157,6 +158,6 @@ if (session_status() === PHP_SESSION_NONE) {
     <?php endif; ?>
 
     <!-- Unified Site Javascript -->
-    <script defer src="./script.js?v=<?php echo time(); ?>"></script>
+    <script defer src="<?php echo $pagePrefix; ?>js/script.js?v=<?php echo time(); ?>"></script>
 </body>
 </html>
